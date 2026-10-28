@@ -127,14 +127,22 @@ Predictive-Maintenance-AI/
 ├── reports/
 ├── src/
 │   └── predictive_maintenance/
+│       ├── __init__.py
 │       ├── config.py
 │       ├── prepare_data.py
 │       ├── prepare_official_test.py
+│       ├── train_baseline.py
 │       ├── compare_models.py
 │       ├── compare_tree_models.py
+│       ├── compare_error_groups.py
 │       ├── evaluate_official_test.py
 │       ├── limited_data_experiment.py
+│       ├── limited_data_experiment_backup.py
+│       ├── limited_data_experiment_multisplit_backup.py
+│       ├── multi_split_experiment.py
+│       ├── per_engine_evaluation.py
 │       ├── semi_supervised_experiment.py
+│       ├── semi_supervised_experiment_backup.py
 │       ├── feature_selection_experiment.py
 │       ├── rul_capping_experiment.py
 │       ├── independent_bias_calibration.py
@@ -147,6 +155,8 @@ Predictive-Maintenance-AI/
 ```
 
 The `data/`, `models/`, and `reports/` directories store datasets, model artifacts, and experiment outputs. Python source code is organized under `src/predictive_maintenance/`.
+
+The source directory includes baseline models, official test evaluation, limited-data experiments, semi-supervised learning, feature selection, RUL capping, per-engine analysis, and bias-correction experiments. Backup scripts are retained for reference.
 
 ## Installation and Setup
 
