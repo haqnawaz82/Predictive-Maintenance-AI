@@ -67,11 +67,34 @@ These experiments are exploratory. Improvements from pseudo-labeling were small 
 
 ```text
 Predictive-Maintenance-AI/
-├── data/
-│   ├── raw/
-│   └── processed/
-├── models/
-├── reports/
-├── src/
-│   └── predictive_maintenance/
-└── tests/
+|-- data/
+|   |-- raw/
+|   |-- processed/
+|-- models/
+|-- reports/
+|-- src/
+|   |-- predictive_maintenance/
+|-- tests/
+```
+
+## Repeated Bias-Correction Experiment
+A calibration-based bias-correction experiment was evaluated over 10 trials using separate training, calibration, and evaluation engine groups. Simulated cutoff cycles between 50% and 90% of each engine's lifetime were used to approximate partially observed engines.
+### Results
+| Metric | Original Extra Trees | Bias-Corrected Extra Trees |
+|---|---:|---:|
+| Mean MAE (cycles) | 29.05 | 26.00 |
+| Mean RMSE (cycles) | 37.64 | 31.23 |
+- MAE improved in 7 of 10 trials.
+- RMSE improved in 10 of 10 trials.
+- Average MAE reduction: 3.05 cycles (approximately 10.5%).
+- Average RMSE reduction: 6.41 cycles (approximately 17.0%).
+### Interpretation and Limitations
+The results suggest that calibration-based bias correction may improve RUL predictions under this simulated evaluation setup. However, the improvement was not consistent for MAE across all trials.
+The evaluation uses simulated cutoff points from training trajectories that run to failure. This does not perfectly reproduce the official FD001 test distribution. The results are preliminary and must not be interpreted as an improvement in official test performance.
+The official test results reported above remain unchanged. The bias-correction experiment has not been adopted as the final model.
+### Experiment Reports
+- `reports/repeated_bias_calibration_runs.csv` - results for each of the 10 trials.
+- `reports/repeated_bias_calibration_summary.csv` - average metrics and standard deviations.
+- `reports/independent_bias_calibration_results.csv` - results from the initial independent calibration experiment.
+- `reports/independent_bias_calibration_predictions.csv` - predictions for that experiment.
+- `reports/validation_bias_correction.csv` - preliminary validation experiment.
