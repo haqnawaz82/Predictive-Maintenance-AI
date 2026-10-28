@@ -1,4 +1,5 @@
 
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
@@ -10,6 +11,19 @@ FEATURE_COLUMNS = [
     "setting_2",
     "setting_3",
 ] + [f"sensor_{i}" for i in range(1, 22)]
+
+
+def nasa_score(y_true, y_pred):
+    """Calculate the asymmetric NASA C-MAPSS scoring function."""
+    error = np.asarray(y_pred) - np.asarray(y_true)
+
+    penalties = np.where(
+        error < 0,
+        np.exp(-error / 13) - 1,
+        np.exp(error / 10) - 1,
+    )
+
+    return float(np.sum(penalties))
 
 
 def evaluate_official_test():
@@ -56,6 +70,7 @@ def evaluate_official_test():
 
         mae = mean_absolute_error(y_test, predictions)
         rmse = root_mean_squared_error(y_test, predictions)
+        score = nasa_score(y_test, predictions)
 
         results.append({
             "model": name,
@@ -63,6 +78,7 @@ def evaluate_official_test():
             "test_engines": test["engine_id"].nunique(),
             "MAE": mae,
             "RMSE": rmse,
+            "NASA_score": score,
         })
 
         prediction_table[f"{name}_prediction"] = predictions
