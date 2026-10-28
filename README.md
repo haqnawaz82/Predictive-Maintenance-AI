@@ -78,15 +78,39 @@ Extra Trees performs better than Random Forest on all three metrics in this expe
 
 ## Limited-Data Experiments
 
-The project has investigated:
+The project investigates how the availability of labeled engine trajectories affects Remaining Useful Life (RUL) prediction. The experiments include:
 
-- Training with 20, 40, and 60 labeled engines.
-- Random Forest versus Extra Trees.
-- Removal of constant and near-constant sensor features.
-- Capped versus uncapped RUL targets.
-- A simple pseudo-labeling approach.
+- Training with different numbers of labeled engines.
+- Comparing Random Forest and Extra Trees.
+- Removing constant and near-constant sensor features.
+- Comparing capped and uncapped RUL targets.
+- Investigating a simple pseudo-labeling approach.
 
-These experiments are exploratory. Improvements from pseudo-labeling were small and inconsistent, so the current results do not establish a reliable benefit.
+### Multi-Split Limited-Data Results
+
+A Random Forest model was evaluated using 20, 40, 60, and 80 labeled training engines. The experiment used three engine-level train-validation splits and five randomly selected training subsets for each engine count within each split, producing 15 runs per training size.
+
+| Training engines | Runs | Mean MAE (cycles) | Mean RMSE (cycles) | MAE standard deviation | RMSE standard deviation |
+|---:|---:|---:|---:|---:|---:|
+| 20 | 15 | 31.09 | 42.15 | 2.67 | 3.36 |
+| 40 | 15 | 28.68 | 39.20 | 2.56 | 2.93 |
+| 60 | 15 | 27.99 | 38.21 | 2.17 | 2.65 |
+| 80 | 15 | 27.87 | 37.96 | 2.12 | 2.59 |
+
+Lower MAE and RMSE indicate better predictive performance.
+
+### Interpretation and Limitations
+
+- Increasing the number of labeled training engines from 20 to 80 reduced mean MAE by approximately 10.4% and mean RMSE by approximately 9.9%.
+- The largest improvement occurred between 20 and 40 training engines. The gains became smaller at higher training sizes.
+- The standard deviations decreased as training size increased, indicating lower variation across the recorded runs.
+- The 15 runs per training size are based on three validation splits, with five subset selections per split. They should not be interpreted as 15 independent validation splits.
+- The metrics are calculated across validation time-step observations, so engines with more observations may contribute more to the overall scores.
+- These are exploratory validation results for the current Random Forest configuration. They do not establish that the same trend will hold for other models or datasets, and they are separate from the official NASA FD001 test-set results.
+
+Other experiments found that pseudo-labeling improvements were small and inconsistent. Further evaluation with more robust validation procedures is needed before drawing stronger conclusions.
+
+The multi-split run-level results and summary are saved in `reports/limited_data_multisplit_runs.csv` and `reports/limited_data_multisplit_summary.csv`, respectively.
 
 ## Repeated Bias-Correction Experiment
 
