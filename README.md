@@ -66,7 +66,15 @@ The following results were obtained in the current experiment using the official
 
 Lower values are better for all three metrics.
 
-Extra Trees performs better than Random Forest on these metrics in this experiment. These are experimental results on FD001 and are **not a claim of superiority over published research**.
+### Understanding the Evaluation Metrics
+
+- **MAE (Mean Absolute Error):** Measures the average absolute difference between predicted and actual Remaining Useful Life (RUL), in operating cycles. An MAE of 23.54 means the average absolute prediction error is approximately 23.54 cycles.
+- **RMSE (Root Mean Squared Error):** Measures prediction error while penalizing larger errors more heavily than MAE. A lower RMSE indicates better performance under this metric.
+- **NASA Score:** Uses an asymmetric scoring function to penalize prediction errors differently depending on their direction. This implementation penalizes underprediction using an exponential scale of 13 cycles and overprediction using an exponential scale of 10 cycles. The penalties are accumulated across the evaluated test engines, so a lower score indicates better performance under this scoring function.
+
+The NASA score is a penalty score, not a percentage or an error measured in cycles. Its magnitude depends on the dataset, the number of evaluated engines, and the scoring definition. Comparisons should therefore use the same evaluation dataset and scoring function.
+
+Extra Trees performs better than Random Forest on all three metrics in this experiment. These are experimental results on FD001 and are **not a claim of superiority over published research**.
 
 ## Limited-Data Experiments
 
@@ -148,14 +156,14 @@ The `data/`, `models/`, and `reports/` directories store datasets, model artifac
 - Git
 - The NASA C-MAPSS FD001 dataset
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/haqnawaz82/Predictive-Maintenance-AI.git
 cd Predictive-Maintenance-AI
 ```
 
-### 2. Create a virtual environment
+### 2. Create a Virtual Environment
 
 On Windows PowerShell:
 
@@ -171,20 +179,20 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```bash
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-### 4. Prepare the dataset
+### 4. Prepare the Dataset
 
 Download the FD001 dataset from the [Zenodo dataset record](https://zenodo.org/records/15346912).
 
 Place the required raw dataset files in the project's `data/raw/` directory. Follow the filenames and paths expected by the data-preparation scripts before running the experiments.
 
-### 5. Run the Python modules
+### 5. Run the Python Modules
 
 From the repository root, set the Python source path.
 
@@ -200,7 +208,7 @@ On macOS or Linux:
 export PYTHONPATH=src
 ```
 
-For example, to run the official test evaluation after the required processed data has been prepared:
+After the required processed data has been prepared, run the official test evaluation:
 
 ```bash
 python -m predictive_maintenance.evaluate_official_test
@@ -224,8 +232,10 @@ python -m unittest discover -s tests
 
 ## Experiment Reports
 
-The repository includes the following experiment reports:
+The repository includes experiment reports such as:
 
+- `reports/official_test_results.csv` — official FD001 test metrics, including MAE, RMSE, and NASA score.
+- `reports/official_test_predictions.csv` — actual RUL values and model predictions for the official test engines.
 - `reports/repeated_bias_calibration_runs.csv` — results for each of the 10 repeated trials.
 - `reports/repeated_bias_calibration_summary.csv` — average metrics and standard deviations.
 - `reports/independent_bias_calibration_results.csv` — results from the initial independent calibration experiment.
