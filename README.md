@@ -88,7 +88,7 @@ The project investigates how the availability of labeled engine trajectories aff
 
 ### Multi-Split Limited-Data Results
 
-A Random Forest model was evaluated using 20, 40, 60, and 80 labeled training engines. The experiment used three engine-level train-validation splits and five randomly selected training subsets for each engine count within each split, producing 15 runs per training size.
+A Random Forest model was evaluated using 20, 40, 60, and 80 labeled training engines. The experiment used three engine-level train-validation splits and five subset-selection repeats for each engine count within each split, producing 15 recorded runs per training size. For the 80-engine setting, all available training engines were selected in every repeat, so the five repeats within each split used identical training subsets.
 
 | Training engines | Runs | Mean MAE (cycles) | Mean RMSE (cycles) | MAE standard deviation | RMSE standard deviation |
 |---:|---:|---:|---:|---:|---:|
@@ -105,6 +105,7 @@ Lower MAE and RMSE indicate better predictive performance.
 - The largest improvement occurred between 20 and 40 training engines. The gains became smaller at higher training sizes.
 - The standard deviations decreased as training size increased, indicating lower variation across the recorded runs.
 - The 15 runs per training size are based on three validation splits, with five subset selections per split. They should not be interpreted as 15 independent validation splits.
+- For the 80-engine setting, the five repeats within each split produce identical results because they use the same training subset, validation set, and model random seed. Therefore, this setting has three distinct split-level evaluations rather than 15 distinct training-subset evaluations.
 - The metrics are calculated across validation time-step observations, so engines with more observations may contribute more to the overall scores.
 - These are exploratory validation results for the current Random Forest configuration. They do not establish that the same trend will hold for other models or datasets, and they are separate from the official NASA FD001 test-set results.
 
