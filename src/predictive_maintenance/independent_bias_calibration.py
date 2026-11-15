@@ -23,7 +23,12 @@ def make_cutoff_samples(data, engine_ids, seed):
     return pd.DataFrame(samples).reset_index(drop=True)
 def main():
     data_path = PROCESSED_DATA_DIR / "train_FD001_with_RUL.csv"
+
+    if not data_path.exists():
+        raise FileNotFoundError(f"Dataset not found: {data_path}")
+
     data = pd.read_csv(data_path)
+
     engine_ids = np.array(sorted(data["engine_id"].unique()))
     # Separate engines into training, calibration, and evaluation groups.
     first_split = GroupShuffleSplit(
@@ -42,6 +47,9 @@ def main():
     )
     calibration_engines = holdout_engines[cal_idx]
     evaluation_engines = holdout_engines[eval_idx]
+    assert len(set(train_engines) & set(calibration_engines)) == 0
+    assert len(set(train_engines) & set(evaluation_engines)) == 0
+    assert len(set(calibration_engines) & set(evaluation_engines)) == 0
     train_rows = data[data["engine_id"].isin(train_engines)]
     calibration = make_cutoff_samples(data, calibration_engines, SEED + 2)
     evaluation = make_cutoff_samples(data, evaluation_engines, SEED + 3)

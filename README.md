@@ -1,6 +1,6 @@
-# AI-Based Predictive Maintenance with Limited Failure Data
+# AI-Based Machine Fault Detection with Limited Failure Data
 
-A machine-learning research project investigating **Remaining Useful Life (RUL) prediction** for simulated aircraft engines, with a focus on model performance when fewer labeled training-engine trajectories are available.
+A machine-learning research project focused on **Remaining Useful Life (RUL) prediction** using NASA C-MAPSS FD001. The current implementation investigates how limited labeled engine trajectories affect prediction accuracy and evaluates machine-learning models and calibration methods under limited failure data.
 
 ## Research Objectives
 
@@ -37,10 +37,11 @@ Official test RUL labels are supplied separately.
 
 ## Technologies Used
 
-- Python
+- Python 3.12
 - NumPy
 - pandas
 - scikit-learn
+- Joblib
 - Git and GitHub
 
 ## Methodology
@@ -53,7 +54,7 @@ Official test RUL labels are supplied separately.
 6. Predict RUL for the last observed cycle of each of the 100 official test engines.
 7. Evaluate predictions using Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and the asymmetric NASA scoring function.
 
-For limited-data experiments, the number of labeled training engines is varied. This simulates having fewer labeled run-to-failure trajectories; it does not mean that individual cycles within a selected trajectory are unlabeled.
+For limited-data experiments, the number of labeled training engines is varied: 20, 40, 60, and 80. This simulates having fewer labeled run-to-failure trajectories; it does not mean that individual cycles within a selected trajectory are unlabeled.
 
 ## Preliminary Official Test Results
 
@@ -139,6 +140,68 @@ The evaluation uses simulated cutoff points from training trajectories that run 
 
 These results are preliminary and must not be interpreted as an improvement in official test performance. The official test results reported above remain unchanged, and bias correction has not been adopted as the final model.
 
+## Saved Models
+
+The project saves the trained Random Forest and Extra Trees models for later use and reproducibility.
+
+The `models/` directory contains:
+
+| File | Description |
+|---|---|
+| `random_forest_fd001.joblib` | Trained Random Forest RUL regression model |
+| `extra_trees_fd001.joblib` | Trained Extra Trees RUL regression model |
+| `feature_columns.json` | Ordered list of the 24 input features used by the models |
+| `model_metadata.json` | Dataset information, training configuration, model filenames, and software versions |
+
+**Note:** The trained `.joblib` model files are not included in this GitHub repository because of their large size. Generate them locally by running the official test evaluation script, or obtain them separately. The JSON files document the model inputs and training configuration.
+
+Both models were trained using all 100 FD001 training engines and evaluated on the 100 official test engines.
+
+### Model Configuration
+
+| Parameter | Random Forest | Extra Trees |
+|---|---:|---:|
+| Number of estimators | 100 | 100 |
+| Minimum samples per leaf | 2 | 2 |
+| Random state | 42 | 42 |
+| `n_jobs` | 2 | 2 |
+
+### Loading a Saved Model
+
+Run the following example from the repository root after installing the dependencies and generating or obtaining the saved model files:
+
+```python
+import json
+import joblib
+import numpy as np
+import pandas as pd
+
+# Load the saved Extra Trees model
+model = joblib.load("models/extra_trees_fd001.joblib")
+
+# Load the ordered feature list
+with open("models/feature_columns.json", "r", encoding="utf-8") as file:
+    feature_columns = json.load(file)
+
+# Load processed official test data
+test_data = pd.read_csv("data/processed/test_FD001_official.csv")
+
+# Select features in the required order
+X_test = test_data[feature_columns]
+
+# Generate RUL predictions
+predictions = model.predict(X_test)
+
+# Prevent negative RUL predictions
+predictions = np.maximum(predictions, 0)
+
+print(predictions)
+```
+
+The example uses the processed official test dataset. For new input data, provide the same 24 features in the same order and use the same preprocessing expected by the trained model.
+
+The saved model artifacts and metadata are intended to support model reuse. They do not represent a deployed real-time aircraft monitoring system.
+
 ## Project Structure
 
 ```text
@@ -148,6 +211,10 @@ Predictive-Maintenance-AI/
 │   └── processed/
 ├── docs/
 ├── models/
+│   ├── random_forest_fd001.joblib
+│   ├── extra_trees_fd001.joblib
+│   ├── feature_columns.json
+│   └── model_metadata.json
 ├── notebooks/
 ├── reports/
 ├── src/
@@ -187,7 +254,7 @@ The source directory includes baseline models, official test evaluation, limited
 
 ### Prerequisites
 
-- Python compatible with the pinned package versions in `requirements.txt`
+- Python 3.12
 - Git
 - The NASA C-MAPSS FD001 dataset
 
@@ -249,7 +316,15 @@ After the required processed data has been prepared, run the official test evalu
 python -m predictive_maintenance.evaluate_official_test
 ```
 
-Other experiment modules can be run using the same pattern, replacing the module name with the desired experiment.
+This command trains both models, saves the model artifacts and metadata, and writes the official test evaluation reports. To avoid replacing existing evaluation reports, use the Python function with `save_reports=False`:
+
+```python
+from predictive_maintenance.evaluate_official_test import evaluate_official_test
+
+evaluate_official_test(save_reports=False)
+```
+
+Other experiment modules can be run using the same module pattern, replacing the module name with the desired experiment.
 
 ## Validation
 
@@ -265,21 +340,29 @@ Run the test suite:
 python -m unittest discover -s tests
 ```
 
+The current test suite contains basic configuration checks; it does not provide full end-to-end validation of the machine-learning pipeline.
+
 ## Experiment Reports
 
 The repository includes experiment reports such as:
 
+- `reports/feature_selection_runs.csv` — detailed results comparing the three feature sets across different training-engine counts.
+- `reports/feature_selection_summary.csv` — aggregated MAE and RMSE results for the feature-selection experiments.
 - `reports/official_test_results.csv` — official FD001 test metrics, including MAE, RMSE, and NASA score.
 - `reports/official_test_predictions.csv` — actual RUL values and model predictions for the official test engines.
+- `reports/limited_data_multisplit_runs.csv` — individual runs from the 20, 40, 60, and 80 training-engine experiments.
+- `reports/limited_data_multisplit_summary.csv` — aggregated results for the multi-split limited-data experiments.
 - `reports/repeated_bias_calibration_runs.csv` — results for each of the 10 repeated trials.
 - `reports/repeated_bias_calibration_summary.csv` — average metrics and standard deviations.
 - `reports/independent_bias_calibration_results.csv` — results from the initial independent calibration experiment.
 - `reports/independent_bias_calibration_predictions.csv` — predictions from that experiment.
-- `reports/validation_bias_correction.csv` — preliminary validation experiment.
+- `reports/validation_bias_correction.csv` — results from a single-split experiment using separate training, calibration, and evaluation engine groups.
 
-## Current Status and Future Work
+## Project Status and Future Work
 
 The project currently includes baseline model comparisons, official test evaluation, limited-data experiments, and exploratory bias-correction studies.
+
+Feature-selection experiments found no consistent performance improvement from removing constant sensors or `sensor_6`. Bias-correction experiments remain exploratory and require further validation across independent engine splits.
 
 Potential next steps include:
 
