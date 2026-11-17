@@ -22,3 +22,6 @@ models/*.joblib
 models/*.pkl
 models/*.pt
 models/*.pth
+
+# Local backup files
+app_backup_before_*
